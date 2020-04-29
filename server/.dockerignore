@@ -1,0 +1,5 @@
+env
+venv
+.dockerignore
+Dockerfile
+Dockerfile.prod

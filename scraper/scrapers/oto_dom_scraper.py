@@ -1,41 +1,34 @@
-""" Otodom.pl scraper class.
+""" Otodom.pl scraper.
 """
 from datetime import datetime
-from pprint import pprint
-from typing import Generator, List
+from typing import Generator, Optional
 
 from bs4 import BeautifulSoup
 
-from http_requests.request import make_request
 from scrapers.scraperbase import Scraper
 
 OTODOM_URL = "https://otodom.pl"
 
 
 def create_otodom_category_urls():
-    for region in ["mazowieckie", "malopolskie", "dolnoslaskie"]:
+    for region in ["warszawa"]:  # , "malopolskie", "dolnoslaskie"]:
         for _type in ["wynajem"]:
-            for property_type in ["mieszkanie", "dom", "pokoj"]:
+            for property_type in ["mieszkanie"]:  # , "dom", "pokoj"]:
                 yield f"{OTODOM_URL}/{_type}/{property_type}/{region}/?nrAdsPerPage=72"
 
 
 class OtoDomScraper(Scraper):
+    """ Otodom.pl scraping class.
+    """
     url = OTODOM_URL
     category_urls = create_otodom_category_urls()
 
-    def scrape_all_items(self) -> List[dict]:
-        items = []
-        for url in self.category_urls:
-            while True:
-                soup = make_request(url, soup=True)
-                items += list(self.parse_page_items(soup))
-                next_page = soup.find("a", {"data-dir": "next"})
-                if "disabled" in next_page["class"]:
-                    break
-                url = next_page["href"]
-                print(url)
-        pprint(items, indent=4)
-        return items
+    @staticmethod
+    def _next_page(soup: BeautifulSoup) -> Optional[str]:
+        next_page = soup.find("a", {"data-dir": "next"})
+        if "disabled" in next_page["class"]:
+            return None
+        return next_page["href"]
 
     def parse_page_items(self, soup: BeautifulSoup) -> Generator[dict, None, None]:
         items = soup.find_all(
@@ -53,7 +46,7 @@ class OtoDomScraper(Scraper):
 
         rooms = soup.find("li", {"class": "offer-item-rooms"})
         if rooms:
-            rooms = int(rooms.text.split(" ")[0])
+            rooms = int(rooms.text.split(" ")[0].replace(">", ''))
 
         area = soup.find("li", {"class": "offer-item-area"})
         if area:
@@ -61,17 +54,19 @@ class OtoDomScraper(Scraper):
             area_dict = {"jednoosobowy": 1, "dwuosobowy": 2, "trzyosobowy i więcej": 3}
             if area in area_dict.keys() and rooms is None:
                 rooms = area_dict[area]
+                area = None
             else:
-                area = float(area)
+                area = float(area.replace(' ', ''))
 
         price = int(
             float(
                 soup.find("li", {"class": "offer-item-price"})
-                .text.replace("/mc", "")
-                .replace("zł", "")
-                .replace(" ", "")
-                .replace(",", ".")
-                .strip()
+                    .text.replace("/mc", "")
+                    .replace("zł", "")
+                    .replace(" ", "")
+                    .replace(",", ".")
+                    .replace('~', '')
+                    .strip()
             )
             * 100
         )
@@ -84,8 +79,6 @@ class OtoDomScraper(Scraper):
             "rooms": rooms,
             "price": price,
             "private_offer": True if offer_type == "Oferta prywatna" else False,
-            "level": None,
-            "price_per_m": None,
             "id": "od" + _id,
             "thumbnail_url": None,
             "url": soup["data-url"],

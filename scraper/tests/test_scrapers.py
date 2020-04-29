@@ -8,11 +8,15 @@ from scrapers.oto_dom_scraper import OtoDomScraper, create_otodom_category_urls
 from tests._html import (MORIZON_ITEM_DETAIL_HTML, MORIZON_ITEMS_HTML,
                          OTODOM_ITEM_DETAIL_HTML, OTODOM_ITEMS_HTML)
 
+from data.db_session import DbSession
+
 MORIZON_CORRECT_ITEMS = BeautifulSoup(MORIZON_ITEMS_HTML, "html.parser")
 MORIZON_CORRECT_ITEM = BeautifulSoup(MORIZON_ITEM_DETAIL_HTML, "html.parser")
 
 OTODOM_CORRECT_ITEMS = BeautifulSoup(OTODOM_ITEMS_HTML, "html.parser")
 OTODOM_CORRECT_ITEM = BeautifulSoup(OTODOM_ITEM_DETAIL_HTML, "html.parser")
+
+#DbSession.global_init('sqlite://')
 
 
 def assert_rent_property_types(data):
@@ -63,7 +67,7 @@ class TestMorizonScraper:
             "thumbnail.jpg"
         )
 
-        assert data["offer_type"] is None
+        assert data["private_offer"] is None
 
 
 class TestOtoDomScraper:
@@ -106,9 +110,9 @@ class TestOtoDomScraper:
 
 def test_create_morizon_category_urls():
     lst = list(create_morizon_category_urls())
-    assert len(lst) == 9
+    assert len(lst) == 1
 
 
 def test_create_otodom_category_urls():
     lst = list(create_otodom_category_urls())
-    assert len(lst) == 9
+    assert len(lst) == 1

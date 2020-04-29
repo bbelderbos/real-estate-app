@@ -2,12 +2,10 @@
 """
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from pprint import pprint
-from typing import Generator, List
+from typing import Generator, Optional
 
 from bs4 import BeautifulSoup
 
-from http_requests.request import make_request
 from scrapers.scraperbase import Scraper
 
 MORIZON_URL = "https://morizon.pl"
@@ -16,8 +14,8 @@ MORIZON_URL = "https://morizon.pl"
 def create_morizon_category_urls():
     """ Create category urls based on city, listing type and rent/sale.
     """
-    for city in ["warszawa", "poznan", "wroclaw"]:
-        for listing_type in ["pokoje", "mieszkania", "domy"]:
+    for city in ["warszawa"]:#, "poznan", "wroclaw"]:
+        for listing_type in ["mieszkania"]:#, "domy", 'pokoje']:
             for rent_sale in ["do-wynajecia"]:
                 yield f"{MORIZON_URL}/{rent_sale}/{listing_type}/najnowsze/{city}/"
 
@@ -30,18 +28,15 @@ class MorizonScraper(Scraper):
     url = MORIZON_URL
     category_urls = create_morizon_category_urls()
 
-    def scrape_all_items(self) -> List[dict]:
-        items = []
-        for url in self.category_urls:
-            while True:
-                soup = make_request(url, soup=True)
-                items += list(self.parse_page_items(soup))
-                next_page = soup.find("a", {"title": "następna strona"})
-                if "href" not in next_page.attrs.keys():
-                    break
-                url = self.url + next_page["href"]
-        pprint(items, indent=4)
-        return items
+
+    @staticmethod
+    def _next_page(soup: BeautifulSoup) -> Optional[str]:
+        next_page = soup.find("a", {"title": "następna strona"})
+        if "href" not in next_page.attrs.keys():
+            return None
+        return MORIZON_URL + next_page["href"]
+
+
 
     def parse_page_items(self, soup: BeautifulSoup) -> Generator[dict, None, None]:
         items = soup.find_all("div", {"class": "row row--property-list"})[:-2]
@@ -114,11 +109,10 @@ class MorizonScraper(Scraper):
             "price": price,
             "rooms": rooms,
             "living_area": area,
-            "lot_area": lot_area,
             "id": _id,
             "url": url,
             "thumbnail_url": image,
-            "offer_type": None,
+            "private_offer": None,
             "source_site": self.name,
         }
 

@@ -1,21 +1,8 @@
 from datetime import datetime
 
 from data.db_session import DbSession
+
 from data.rent_property import RentProperty
-
-
-class TestDbSession:
-    def test_db_global_init(self):
-        assert DbSession.engine is None
-        assert DbSession.factory is None
-
-        DbSession.global_init()
-
-        assert DbSession.engine is not None
-        assert DbSession.factory is not None
-
-    def test_db_already_init(self):
-        assert DbSession.global_init() is False
 
 
 DATE = datetime.now()
@@ -33,6 +20,20 @@ CORRECT_RENT_PROPERTY = {
     "thumbnail_url": "https://otodom.pl/thumbnail.jpg",
     "private_offer": True,
 }
+
+
+class TestDbSession:
+    def test_db_global_init(self):
+        assert DbSession.engine is None
+        assert DbSession.factory is None
+
+        DbSession.global_init('sqlite://')
+
+        assert DbSession.engine is not None
+        assert DbSession.factory is not None
+
+    def test_db_already_init(self):
+        assert DbSession.global_init('sqlite://') is False
 
 
 class TestDbModels:
