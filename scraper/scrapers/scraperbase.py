@@ -27,16 +27,14 @@ class Scraper(abc.ABC):
         """
         pass
 
-    @staticmethod
     @abc.abstractmethod
-    def parse_page_items(soup: BeautifulSoup) -> Generator[dict, None, None]:
+    def parse_page_items(self, soup: BeautifulSoup) -> Generator[dict, None, None]:
         """ parse all items showing on a page.
         """
         pass
 
-    @staticmethod
     @abc.abstractmethod
-    def parse_preview_item(soup: BeautifulSoup) -> dict:
+    def parse_preview_item(self, soup: BeautifulSoup) -> dict:
         """ Parse a preview item that shows up on a result page.
         """
         pass

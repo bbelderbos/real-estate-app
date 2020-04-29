@@ -1,12 +1,13 @@
 """ Otodom.pl scraper class.
 """
+from datetime import datetime
 from pprint import pprint
 from typing import Generator, List
 
 from bs4 import BeautifulSoup
 
 from http_requests.request import make_request
-from scrapers.scraper_base import Scraper
+from scrapers.scraperbase import Scraper
 
 OTODOM_URL = "https://otodom.pl"
 
@@ -36,15 +37,14 @@ class OtoDomScraper(Scraper):
         pprint(items, indent=4)
         return items
 
-    @staticmethod
-    def parse_page_items(soup: BeautifulSoup) -> Generator[dict, None, None]:
+    def parse_page_items(self, soup: BeautifulSoup) -> Generator[dict, None, None]:
         items = soup.find_all(
             "article", {"class": "offer-item", "data-featured-name": "listing_no_promo"}
         )
-        return [OtoDomScraper.parse_preview_item(x) for x in items]
+        for item in items:
+            yield self.parse_preview_item(item)
 
-    @staticmethod
-    def parse_preview_item(soup: BeautifulSoup) -> dict:
+    def parse_preview_item(self, soup: BeautifulSoup) -> dict:
         _id = soup["data-tracking-id"]
         title = soup.find("span", {"class": "offer-item-title"}).text.strip()
         address = soup.find("p", {"class": "text-nowrap"})
@@ -64,28 +64,32 @@ class OtoDomScraper(Scraper):
             else:
                 area = float(area)
 
-        price = float(
-            soup.find("li", {"class": "offer-item-price"})
-            .text.replace("/mc", "")
-            .replace("zł", "")
-            .replace(" ", "")
-            .replace(",", ".")
-            .strip()
+        price = int(
+            float(
+                soup.find("li", {"class": "offer-item-price"})
+                .text.replace("/mc", "")
+                .replace("zł", "")
+                .replace(" ", "")
+                .replace(",", ".")
+                .strip()
+            )
+            * 100
         )
         offer_type = soup.find("li", {"class": "pull-right"}).text.strip()
         return {
             "title": title,
             "address": address,
-            "added_on": None,
-            "area": area,
+            "added_on": datetime.now(),
+            "living_area": area,
             "rooms": rooms,
             "price": price,
-            "offer_type": offer_type,
+            "private_offer": True if offer_type == "Oferta prywatna" else False,
             "level": None,
             "price_per_m": None,
-            "site_id": _id,
+            "id": "od" + _id,
             "thumbnail_url": None,
             "url": soup["data-url"],
+            "source_site": self.name,
         }
 
     def parse_details_page(self, url: str):

@@ -1,6 +1,7 @@
 [run]
 omit=
     *tests/*,
-    venv/*'
-    env/*
+    venv/*',
+    env/*,
+    scrapers/scraperbase.py
 branch = True

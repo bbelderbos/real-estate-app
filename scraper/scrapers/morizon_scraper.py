@@ -1,13 +1,14 @@
 """ Morizon.pl scraper class.
 """
 from dataclasses import dataclass
+from datetime import datetime, timedelta
 from pprint import pprint
 from typing import Generator, List
 
 from bs4 import BeautifulSoup
 
 from http_requests.request import make_request
-from scrapers.scraper_base import Scraper
+from scrapers.scraperbase import Scraper
 
 MORIZON_URL = "https://morizon.pl"
 
@@ -42,36 +43,42 @@ class MorizonScraper(Scraper):
         pprint(items, indent=4)
         return items
 
-    @staticmethod
-    def parse_page_items(soup: BeautifulSoup) -> Generator[dict, None, None]:
+    def parse_page_items(self, soup: BeautifulSoup) -> Generator[dict, None, None]:
         items = soup.find_all("div", {"class": "row row--property-list"})[:-2]
-        items = [MorizonScraper.parse_preview_item(x) for x in items]
+        items = [self.parse_preview_item(x) for x in items]
         _ids = []
         for item in items:
-            if item["site_id"] not in _ids:
+            if item["id"] not in _ids:
                 yield item
-                _ids.append(item["site_id"])
+                _ids.append(item["id"])
 
-    @staticmethod
-    def parse_preview_item(soup: BeautifulSoup) -> dict:
-        # print(soup.prettify())
-        # input()
+    def parse_preview_item(self, soup: BeautifulSoup) -> dict:
         address = soup.find("h2", {"class": "single-result__title"}).text.strip()
         added_on = soup.find(
             "span", {"class": "single-result__category--date"}
         ).text.strip()
 
+        title = address
+
+        if added_on == "dzisiaj":
+            added_on = datetime.now()
+        elif added_on == "wczoraj":
+            added_on = datetime.now() - timedelta(days=1)
+        else:
+            added_on = datetime.strptime(added_on, "%d-%m-%Y")
+
         url = soup.find("a", {"itemprop": "url"})["href"]
-        price = float(soup.find("meta", {"itemprop": "price"})["content"])
+
+        idx = url.rfind("-") + 1
+        _id = url[idx:]
+
+        # Convert price to grosze (cents)
+        price = int(float(soup.find("meta", {"itemprop": "price"})["content"]) * 100)
 
         try:
             image = soup.find("meta", {"itemprop": "image"})["content"]
         except TypeError:
             image = None
-
-        price_per_m = soup.find(
-            "p", {"class": "single-result__price single-result__price--currency"}
-        ).text.strip()
 
         params = soup.find("ul", {"class": "param list-unstyled list-inline"}).find_all(
             "li"
@@ -100,29 +107,20 @@ class MorizonScraper(Scraper):
         except IndexError:
             lot_area = None
 
-        try:
-            level = [x.find("b").text.strip() for x in params if "piętro" in x.text][0]
-        except IndexError:
-            level = None
-
         return {
-            "title": None,
+            "title": title,
             "address": address,
             "added_on": added_on,
             "price": price,
             "rooms": rooms,
-            "area": area,
+            "living_area": area,
             "lot_area": lot_area,
-            "price_per_m": price_per_m,
-            "level": level,
-            "site_id": url[url.rfind("-") + 1 :],
+            "id": _id,
             "url": url,
             "thumbnail_url": image,
             "offer_type": None,
+            "source_site": self.name,
         }
 
     def parse_details_page(self, url: str):
         pass
-
-
-# MorizonScraper().scrape_all_items()
