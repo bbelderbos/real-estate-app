@@ -2,14 +2,13 @@ import os
 
 from http_requests.proxy import ProxyHandler
 
-PROXY = os.path.join('tests', 'proxies.txt')
-EMPTY = os.path.join('tests', 'empty.txt')
+PROXY = os.path.join("tests", "proxies.txt")
+EMPTY = os.path.join("tests", "empty.txt")
 with open(PROXY) as f:
-    CORRECT_PROXIES = f.read().split('\n')
+    CORRECT_PROXIES = f.read().split("\n")
 
 
 class TestProxy:
-
     def test_can_read_correct_txt_file(self):
         proxy_handler = ProxyHandler(PROXY)
         assert all(proxy in CORRECT_PROXIES for proxy in proxy_handler.proxies)
@@ -21,7 +20,7 @@ class TestProxy:
 
     def test_raise_error_on_not_existing_file(self):
         try:
-            ProxyHandler('not_exist.txt')
+            ProxyHandler("not_exist.txt")
             assert False
         except FileNotFoundError:
             assert True
@@ -36,5 +35,7 @@ class TestProxy:
     def test_random_proxy(self):
         proxy_handler = ProxyHandler(PROXY)
         random_proxy = proxy_handler.random_proxy
-        assert any(random_proxy == proxy_handler.create_proxy_dict(proxy)
-                   for proxy in proxy_handler.proxies)
+        assert any(
+            random_proxy == proxy_handler.create_proxy_dict(proxy)
+            for proxy in proxy_handler.proxies
+        )

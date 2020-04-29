@@ -1,4 +1,7 @@
+black
 bs4
+flake8
 requests
+isort
 pytest
 pytest-cov

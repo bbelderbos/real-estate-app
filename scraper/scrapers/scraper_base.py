@@ -2,7 +2,7 @@
 """
 import abc
 from dataclasses import dataclass, field
-from typing import ClassVar, List, Generator
+from typing import ClassVar, Generator, List
 
 from bs4 import BeautifulSoup
 
@@ -13,12 +13,13 @@ from http_requests.request import make_request
 class Scraper(abc.ABC):
     """ Base class for Real Estate Scraper.
     """
+
     url: ClassVar[str]
     category_urls: ClassVar[List[str]]
     name: ClassVar[str] = field(init=False)
 
     def __post_init__(self):
-        self.name = self.url.split("//")[-1].split("/")[0].split('?')[0]
+        self.name = self.url.split("//")[-1].split("/")[0].split("?")[0]
 
     @abc.abstractmethod
     def scrape_all_items(self) -> List[dict]:

@@ -12,6 +12,7 @@ class ProxyHandler:
     <user>:<password>@<ip>:<port>pyte
     <user>:<password>@<ip>:<port>
     """
+
     path: Path
     proxies: List[str] = field(init=False)
 
@@ -22,7 +23,7 @@ class ProxyHandler:
         path = Path(self.path)
         if not path.exists():
             raise FileNotFoundError("File does not exist.")
-        with path.open(mode='r', encoding='utf-8') as fid:
+        with path.open(mode="r", encoding="utf-8") as fid:
             self.proxies = list({x.strip() for x in fid if x.strip()})
         if not self.proxies:
             raise ValueError("File is Empty.")
@@ -38,8 +39,5 @@ class ProxyHandler:
     def create_proxy_dict(proxy):
         """ create proxy dict.
         """
-        proxy_str = f'http://{proxy}'
-        return {
-            'http': proxy_str,
-            'https': proxy_str
-        }
+        proxy_str = f"http://{proxy}"
+        return {"http": proxy_str, "https": proxy_str}
