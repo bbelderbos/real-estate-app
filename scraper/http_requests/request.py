@@ -1,4 +1,6 @@
 from typing import Optional
+
+from bs4 import BeautifulSoup
 import requests
 
 
@@ -10,9 +12,10 @@ DEFAULT_HEADERS = {
 
 
 def make_request(url: str, headers: Optional[dict] = None,
-                 proxies: Optional[dict] = None) -> Optional[requests.Response]:
-    """ Make HTTP Get Request, return response if status code is 200,
-    none if 404 else raise error.
+                 proxies: Optional[dict] = None,
+                 soup: bool = False) -> Optional[requests.Response]:
+    """ Make HTTP Get Request, return response or bs4 if status code is 200,
+    None if 404 else raise error.
     """
     if headers is None:
         headers = DEFAULT_HEADERS
@@ -23,4 +26,4 @@ def make_request(url: str, headers: Optional[dict] = None,
     if response.status_code == 404:
         return None
     response.raise_for_status()
-    return response
+    return BeautifulSoup(response.content, 'html.parser') if soup else response
