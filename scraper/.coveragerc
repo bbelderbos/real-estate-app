@@ -1,5 +1,6 @@
 [run]
 omit=
     *tests/*,
-    venv/*
+    venv/*'
+    env/*
 branch = True
