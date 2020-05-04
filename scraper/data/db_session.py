@@ -12,10 +12,10 @@ PG_USER = os.getenv("SQL_USER", "postgres")
 PG_PASS = os.getenv("SQL_PASSWORD", "postgres123")
 PG_HOST = os.getenv("SQL_HOST", "localhost")
 PG_PORT = os.getenv("SQL_PORT", 5432)
-PG_DATABASE = os.getenv("SQL_DATABASE", "postgres")
+PG_DATABASE = os.getenv("SQL_DATABASE", "prop_dev")
 
 CONN_STR = f"postgresql://{PG_USER}:{PG_PASS}@{PG_HOST}:{PG_PORT}/{PG_DATABASE}"
-
+print(CONN_STR)
 
 @dataclass
 class DbSession:

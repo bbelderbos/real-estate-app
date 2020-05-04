@@ -17,3 +17,4 @@ if __name__ == '__main__':
         print(f"[{datetime.now()}] scraping")
         main()
         sleep(360)
+        break

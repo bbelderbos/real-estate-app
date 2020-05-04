@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}Szukaj Mieszkania{% endblock %}
+
+{% block content %}
+
+<section>
+<div class="skewed"></div>
+<div class="hero" style="padding-top: 2rem;padding-right: 2rem;">
+    <div class="columns">
+        <div class="column"></div>
+        <div class="column">
+            <div class="card bg-gray">
+                <div class="card-header">
+                    <div class="card-title h5">Szukaj Mieszkania</div>
+                    <div class="card-subtitle text-gray">Znajdz se mieszkanie</div>
+                </div>
+                <form method="GET" class="form-horizontal">
+                <div class="card-body">
+
+                        {{ form.non_field_errors }}
+                        <div class="form-group">
+                                {{ form.query.errors}}
+                              <label class="form-label" for="{{ form.query.id_for_label }}">Wyszukaj:</label>
+                              <input name="{{ form.query.html_name }}" class="form-input" type="text" id="{{ form.query.id_for_label }}" placeholder="Szukaj">
+                        </div>
+                        <div class="form-group">
+                            {{ form.city.errors }}
+                            <select name="{{ form.city.html_name }}" class="form-select" id="{{ form.city.id_for_label }}">
+                                <option value="WAW" selected>Warszawa</option>
+                              </select>
+                        </div>
+                            <div class="columns">
+                                <div class="column">
+                                    {{ form.min_rooms.errors }}
+                                    <label class="form-label" for="{{ form.min_rooms.id_for_label }}">Min. Pokoje</label>
+                                    <input name="{{ form.min_rooms.html_name }}" class="form-input" type="number" id="{{ form.min_rooms.id_for_label }}" min="0" max="10">
+                                </div>
+                                <div class="column">
+                                    {{ form.max_rooms.errors }}
+                                    <label class="form-label" for="{{ form.max_rooms.id_for_label }}">Min. Pokoje</label>
+                                    <input name="{{ form.max_rooms.html_name }}" class="form-input" type="number" id="{{ form.max_rooms.id_for_label }}" min="0" max="10">
+                                </div>
+                            </div>
+                        <br>
+
+                            <div class="columns">
+                                <div class="column">
+                                    {{ form.min_price.errors }}
+                                    {{ form.min_price.label}}
+                                    {{ form.min_price }}
+                                </div>
+                                <div class="column">
+                                    {{ form.max_price.errors }}
+                                    {{ form.max_price.label}}
+                                    {{ form.max_price }}
+                                </div>
+                            </div>
+
+                    <br>
+                    <div class="form-group">
+
+                        <select class="form-select" name="property_type" id="id_property_type">
+                            <option value="1">Mieszkanie</option>
+
+                            <option value="2">Pokoj</option>
+
+                            <option value="3">Dom</option>
+
+                        </select>
+                    </div>
+
+
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-primary bg-dark">Szukaj</button>
+                </div>
+                    {% csrf_token %}
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+</section>
+<br>
+<br>
+<br><br><br><br>
+<section>
+    <div class="container">
+        <div class="columns">
+            {% for result in results %}
+            <div class="column">
+                <div class="card bg-primary" style="margin-bottom: 2rem;">
+                  <div class="card-image">
+                    <img src="{{ result.thumbnail_url }}" class="img-fit-contain">
+                  </div>
+                  <div class="card-header">
+                      <div class="card-title h5"></div>
+                    <div class="card-subtitle text-gray"> </div>
+                  </div>
+                  <div class="card-body">
+                    <div class="chip">
+                        <figure class="avatar avatar-sm bg-dark" data-initial="{{ result.rooms }}" style="background-color: #5755d9;"></figure>Rooms
+                    </div>
+                  </div>
+                  <div class="card-footer">
+                    <button class="btn btn-primary bg-dark">{{ result.source_site }}</button>
+                  </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+
+
+</section>
+
+
+
+
+<ul>
+{% for result in results %}
+    <li>
+        {{ result.address }}
+        - PLN{{result.price}}/miesiac
+        - Ilosc Pokoji: {{ result.rooms }}
+        - Obszar: {{ result.living_area }}
+        - URL: <a target="_blank" href="{{ result.url }}"> {{ result.source_site}}</a>
+    </li>
+{% endfor %}
+</ul>
+
+<!--<form method="GET">-->
+<!--        <div class="form-group">-->
+<!--            {{ form.as_p }}-->
+<!--            {% csrf_token %}-->
+<!--            <input type="submit" value="Search">-->
+<!--        </div>-->
+<!--    </form>-->
+
+{% endblock %}

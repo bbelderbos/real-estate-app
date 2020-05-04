@@ -6,7 +6,7 @@ from data.modelbase import SqlAlchemyBase
 
 
 class RentProperty(SqlAlchemyBase):
-    __tablename__ = "rent_properties"
+    __tablename__ = "search_propertyforrent"
     id = Column(VARCHAR(255), primary_key=True, index=True)
     source_site = Column(VARCHAR(255), index=True)
     title = Column(VARCHAR(255), nullable=True)
